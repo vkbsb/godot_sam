@@ -458,15 +458,6 @@ namespace SuperAnim {
 		}
 	}
 		
-//    typedef Map<int, SuperAnimObject> IntToSuperAnimObjectMap;
-	bool SuperAnimLabelLess(const SuperAnimLabel& a, const SuperAnimLabel& b){
-		if (a.mStartFrameNum != b.mStartFrameNum) {
-			return a.mStartFrameNum < b.mStartFrameNum;
-		}
-		
-		return true;
-	}
-
     bool SuperAnimDefMgr::LoadSuperAnimMainDef(const String &theSuperAnimFile)
     {
         return false;

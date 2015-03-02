@@ -28,7 +28,7 @@
 
 #include <math.h>
 #include <string>
-
+#include "core/resource.h"
 #include "core/ustring.h"
 
 #define SAM_VERSION 1
@@ -182,6 +182,14 @@ namespace SuperAnim{
         String mLabelName;
         int mStartFrameNum;
         int mEndFrameNum;
+
+        bool operator < (const SuperAnimLabel &b)  const{
+            print_line("Operator < called" + itos(mStartFrameNum) + " " + itos(b.mStartFrameNum));
+            if (mStartFrameNum != b.mStartFrameNum) {
+                return mStartFrameNum < b.mStartFrameNum;
+            }
+            return true;
+        }
     };
     typedef Vector<SuperAnimLabel> SuperAnimLabelArray;
 

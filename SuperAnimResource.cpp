@@ -250,11 +250,9 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
             aFrame.mObjectVector.resize(aCurObjectMap.size());
             aFrame.mObjectVector.clear();
 
-//            for(int j = 0; j < aCurObjectMap.size(); j++){
-//                aFrame.mObjectVector.push_back(aCurObjectMap[j]);
-//            }
-
-            for(SuperAnim::IntToSuperAnimObjectMap::Element *pElement = aCurObjectMap.front(); pElement != NULL; pElement = pElement->next()){
+            for(SuperAnim::IntToSuperAnimObjectMap::Element *pElement = aCurObjectMap.front();
+                pElement != NULL;
+                pElement = pElement->next()){
                 SuperAnim::SuperAnimObject &anObject = pElement->value();
                 aFrame.mObjectVector.push_back(anObject);
             }
@@ -267,14 +265,15 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
 
         }
 
-        print_line("Have to Sort the Label Array Now");
         // sort the label array & calculate the end frame for each label
 //		std::sort(aSuperAnimLabelArray.begin(), aSuperAnimLabelArray.end(), SuperAnimLabelLess);
+        aSuperAnimLabelArray.sort();
+
         if (aSuperAnimLabelArray.size() > 1) {
             for (int i = 0; i < aSuperAnimLabelArray.size() - 1; i++) {
                 SuperAnim::SuperAnimLabel& aCurLabel = aSuperAnimLabelArray[i];
                 const SuperAnim::SuperAnimLabel& aNextLabel = aSuperAnimLabelArray[i + 1];
-                aCurLabel.mEndFrameNum = aNextLabel.mStartFrameNum - 1;
+                aCurLabel.mEndFrameNum = aNextLabel.mStartFrameNum - 1;                
             }
              SuperAnim::SuperAnimLabel& aLastLabel = aSuperAnimLabelArray[aSuperAnimLabelArray.size() - 1];
             aLastLabel.mEndFrameNum = aMainDef.mEndFrameNum;
@@ -286,6 +285,8 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
         aMainDef.mLabels.clear();
         for (int i = 0; i < aSuperAnimLabelArray.size(); i++) {
             aMainDef.mLabels.push_back(aSuperAnimLabelArray[i]);
+            SuperAnim::SuperAnimLabel& aCurLabel = aSuperAnimLabelArray[i];
+            print_line("CurLabel: " + aCurLabel.mLabelName + " sf:" + itos(aCurLabel.mStartFrameNum) + " ef:" + itos(aCurLabel.mEndFrameNum));
         }
 
         return true;
