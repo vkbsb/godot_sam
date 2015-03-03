@@ -64,16 +64,16 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
 
         /*-------------------- test for file format reading --------------*/
 
-        FileAccess *fa = FileAccess::open(aFullPath, FileAccess::READ);
-        if(fa != NULL){
-            if(fa->get_32() != 0x2E53414D){
-                print_line("Bad Frmat from Test");
-            }else{
-                print_line("Found the format");
-            }
-            fa->close();
-            memdelete(fa);
-        }
+//        FileAccess *fa = FileAccess::open(aFullPath, FileAccess::READ);
+//        if(fa != NULL){
+//            if(fa->get_32() != 0x2E53414D){
+//                print_line("Bad Frmat from Test");
+//            }else{
+//                print_line("Found the format");
+//            }
+//            fa->close();
+//            memdelete(fa);
+//        }
         /*---------------------------------------------------------------*/
 
         if (aBuffer.ReadLong() != 0x2E53414D)
@@ -93,6 +93,8 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
         }
 
         SuperAnimMainDef &aMainDef(*this);//mMainDefCache[theSuperAnimFile];
+//        SuperAnimMainDef &aMainDef = mMainDefCache[theSuperAnimFile];
+
         aMainDef.mAnimRate = aBuffer.ReadByte();
         aMainDef.mX = aBuffer.ReadLong() / TWIPS_PER_PIXEL;
         aMainDef.mY = aBuffer.ReadLong() / TWIPS_PER_PIXEL;
@@ -123,9 +125,10 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
             } else {
                 aImagePath = aCurDir + "/" + aSuperAnimImage.mImageName;
             }
-
+            print_line("load image: " + aImagePath);
             //TODO: get the sprite id here.
-            aSuperAnimImage.mSpriteId = NULL; //LoadSuperAnimSprite(aImagePath);
+            //get the texture resource and add it to the SuperAnimSprite stuff and the aSuperAnimImageId.
+            aSuperAnimImage.mSpriteId = SuperAnim::LoadSuperAnimSprite(aImagePath);
         }
 
         int aNumFrames = aBuffer.ReadShort();
@@ -298,7 +301,7 @@ RES SuperAnimDataFormatLoader::load(const String &p_path,const String& p_origina
     SuperAnimData *sad = memnew(SuperAnimData);
     
     sad->LoadSuperAnimMainDef(p_path);
-
+    SuperAnim::SuperAnimDefMgr::GetInstance()->addMainDef(p_path, sad);
     Ref<SuperAnimData> animres(sad);
 
 //  SuperAnimHandler animhandle = GetSuperAnimHandler(p_path);

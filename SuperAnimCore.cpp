@@ -243,23 +243,6 @@ namespace SuperAnim {
         return aString;
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////
-//	// implement extern functions
-//	SuperAnimHandler GetSuperAnimHandler(const String &theAbsAnimFile){
-//		SuperAnimHandler aSuperAnimHander;
-//		SuperAnimMainDef *aMainDef = SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(theAbsAnimFile);
-//		if (aMainDef) {
-//			aSuperAnimHander.mMainDefKey = theAbsAnimFile; // right now just use the animation file name as the key
-//			aSuperAnimHander.mAnimRate = aMainDef->mAnimRate;
-//			aSuperAnimHander.mWidth = aMainDef->mWidth;
-//			aSuperAnimHander.mHeight = aMainDef->mHeight;
-//			aSuperAnimHander.mCurFrameNum = aMainDef->mStartFrameNum;
-//			aSuperAnimHander.mIsHandlerValid = true;
-//		} else {
-//			aSuperAnimHander.mIsHandlerValid = false;
-//		}
-		
-//		return aSuperAnimHander;
-//	}
 	
 	static int sAnimObjIndex = 0;
 	static bool sShouldStartAnimObjDrawItr = false;
@@ -458,6 +441,11 @@ namespace SuperAnim {
 		}
 	}
 		
+    void SuperAnimDefMgr::addMainDef(const String &theSuperAnimFile, SuperAnimMainDef *ptr)
+    {
+        mMainDefCache[theSuperAnimFile] = ptr;
+    }
+
     bool SuperAnimDefMgr::LoadSuperAnimMainDef(const String &theSuperAnimFile)
     {
         return false;
@@ -465,16 +453,16 @@ namespace SuperAnim {
 	
     SuperAnimMainDef *SuperAnimDefMgr::Load_GetSuperAnimMainDef(const String &theSuperAnimFile)
 	{
-////		SuperAnimMainDefMap::iterator anItr = mMainDefCache.find(theSuperAnimFile);
-////		if (anItr != mMainDefCache.end())
-////		{
-////			return &anItr->second;
-////		}
+        SuperAnimMainDefMap::Element *anItr = mMainDefCache.find(theSuperAnimFile);
+        if (anItr != NULL)
+        {
+            return anItr->value();
+        }
 		
-//		if (LoadSuperAnimMainDef(theSuperAnimFile) == false)
-//			return NULL;
+        if (LoadSuperAnimMainDef(theSuperAnimFile) == false)
+            return NULL;
 		
-//		return Load_GetSuperAnimMainDef(theSuperAnimFile);
+        return Load_GetSuperAnimMainDef(theSuperAnimFile);
 	}
 	
     void SuperAnimDefMgr::UnloadSuperAnimMainDef(const String &theName)
@@ -490,6 +478,6 @@ namespace SuperAnim {
 //			UnloadSuperSprite(anImage.mSpriteId);
 //		}
 		
-//		mMainDefCache.erase(anItr);
+//		mMainDefCache.erase(anItr);        
 	}	
 }// end namespace

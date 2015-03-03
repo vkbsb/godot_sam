@@ -1,8 +1,64 @@
 /* sumator.cpp */
 
 #include "SuperAnimNode.h"
+#include "SuperAnimSprite.h"
+
 #include "core/io/file_access_buffered.h"
 #include "core/io/resource_loader.h"
+
+/*------------- FUNCTIONS FOR SUPER ANIM ----------------*/
+// Operator between matrix & vertex
+inline ccVertex3F operator*(const SuperAnim::SuperAnimMatrix3 &theMatrix3, const ccVertex3F &theVec)
+{
+    return vertex3(
+                   theMatrix3.m00*theVec.x + theMatrix3.m01*theVec.y + theMatrix3.m02,
+                   theMatrix3.m10*theVec.x + theMatrix3.m11*theVec.y + theMatrix3.m12,
+                   theVec.z);
+}
+
+inline ccV3F_C4B_T2F_Quad operator*(const SuperAnim::SuperAnimMatrix3 &theMatrix3, const ccV3F_C4B_T2F_Quad &theQuad)
+{
+    ccV3F_C4B_T2F_Quad aNewQuad = theQuad;
+    aNewQuad.bl.vertices = theMatrix3 * theQuad.bl.vertices;
+    aNewQuad.br.vertices = theMatrix3 * theQuad.br.vertices;
+    aNewQuad.tl.vertices = theMatrix3 * theQuad.tl.vertices;
+    aNewQuad.tr.vertices = theMatrix3 * theQuad.tr.vertices;
+    return aNewQuad;
+}
+
+/*--------------------------------------------------------*/
+
+
+void SuperAnimNode::Pause()
+{
+    mAnimState = kAnimStatePause;
+}
+
+void SuperAnimNode::Resume()
+{
+    mAnimState = kAnimStatePlaying;
+}
+
+bool SuperAnimNode::IsPause(){
+    return mAnimState == kAnimStatePause;
+}
+
+bool SuperAnimNode::IsPlaying(){
+    return mAnimState == kAnimStatePlaying;
+}
+
+int SuperAnimNode::GetCurFrame(){
+    return (int)mCurFrameNum;
+}
+
+int SuperAnimNode::GetId(){
+    return mId;
+}
+
+String SuperAnimNode::GetCurSectionName(){
+    return mCurLabel;
+}
+
 
 void SuperAnimNode::add(int value) {
 
@@ -56,12 +112,12 @@ SuperAnimNode::SuperAnimNode() {
 
 void SuperAnimNode::load_anim(String resPath)
 {
-
     Ref<SuperAnimData> samRes = ResourceLoader::load(resPath);
 
     //we merge the details of SuerAnimDef into Node.
     if( !samRes.is_null() ){
         SuperAnimData *aMainDef = samRes.ptr();
+        this->mMainDefKey = aMainDef->get_path();
         this->mAnimRate = aMainDef->mAnimRate;
         this->mWidth = aMainDef->mWidth;
         this->mHeight = aMainDef->mHeight;

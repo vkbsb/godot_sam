@@ -4,18 +4,28 @@
 
 #include "scene/2d/node_2d.h"
 #include "SuperAnimResource.h"
+#include "SuperAnimSprite.h"
 
 class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
     OBJ_TYPE(SuperAnimNode, Node2D);
 
     int count;
     Color myColor;
+    int mId;
 
     protected:
     static void _bind_methods();
-    
+    AnimState mAnimState;
+
     public:
 
+    void Pause();
+    void Resume();
+    bool IsPause();
+    bool IsPlaying();
+    int GetCurFrame();
+    int GetId();
+    String GetCurSectionName();
     //functions to expose
     void add(int value);
     void reset();

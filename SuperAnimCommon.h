@@ -239,7 +239,7 @@ namespace SuperAnim{
     //TODO: remove this class
     //We wont' need the SuperAnimDefMgr because the Res returned when we load a sam is the SuperAnimMainDef.
     //This is the definition of the file.
-    typedef Map<String, SuperAnimMainDef> SuperAnimMainDefMap;
+    typedef Map<String, SuperAnimMainDef*> SuperAnimMainDefMap;
     class SuperAnimDefMgr
     {
     private:
@@ -253,6 +253,8 @@ namespace SuperAnim{
     public:
         static SuperAnimDefMgr *GetInstance();
         static void DestroyInstance();
+
+        void addMainDef(const String &theSuperAnimFile, SuperAnimMainDef*);
 
         // String theSuperAnimFile include the absolute path
         SuperAnimMainDef *Load_GetSuperAnimMainDef(const String &theSuperAnimFile);
