@@ -32,6 +32,12 @@ typedef struct _ccColor4B
     uint8_t a;
 } ccColor4B;
 
+static inline ccColor4B ccc4(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t o)
+{
+    ccColor4B c = {r, g, b, o};
+    return c;
+}
+
 //! a Point with a vertex point, a tex coord point and a color 4B
 typedef struct _ccV3F_C4B_T2F
 {
@@ -78,6 +84,7 @@ namespace SuperAnim {
     class SuperAnimSprite
     {
     public:
+        Ref<Texture> mTexRef;
         CCTexture2D* mTexture;
         ccV3F_C4B_T2F_Quad mQuad;
         String mStringId;
@@ -101,6 +108,7 @@ namespace SuperAnim {
         ~SuperAnimSpriteMgr();
 
     public:
+        void dumpSpritesInfo();
         static SuperAnimSpriteMgr *GetInstance();
         static void DestroyInstance();
         SuperAnimSpriteId LoadSuperAnimSprite(String theSpriteName);

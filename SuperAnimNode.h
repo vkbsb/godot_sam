@@ -13,11 +13,29 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
     Color myColor;
     int mId;
 
+    bool mIsFlipX;
+    bool mIsFlipY;
+    float mSpeedFactor;
+    bool mIsLoop;
+    AnimState mAnimState;
+    Ref<SuperAnimData> mSamRes;
+
+
+    Vector<Point2> p_points;
+    Vector<Point2> p_uvs;
+
+
+    void superAnimDraw();
+    void superAnimUpdate(float dt);
+
     protected:
     static void _bind_methods();
-    AnimState mAnimState;
 
     public:
+
+    bool PlaySection(const String &labelName, bool isLoop);
+    bool HasSection(const String &labelName);
+    void setSpeedFactor(float newSpeedFactor);
 
     void Pause();
     void Resume();

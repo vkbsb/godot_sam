@@ -28,6 +28,7 @@
 #include <vector>
 #include <map>
 #include "core/map.h"
+#include "core/os/os.h"
 #include <algorithm>
 #include "SuperAnimCommon.h"
 
@@ -251,24 +252,28 @@ namespace SuperAnim {
 		sShouldStartAnimObjDrawItr = true;
 	}
 	
-	bool IterateAnimObjDrawInfo(const SuperAnimHandler &theHandler, SuperAnimObjDrawInfo& theOutputObjDrawInfo){
+    bool IterateAnimObjDrawInfo(const SuperAnimHandler *theHandler, SuperAnimObjDrawInfo& theOutputObjDrawInfo){
+        MYPRINT("+IterateAnimObjDrawInfo\n");
 		if (!sShouldStartAnimObjDrawItr) {
 			assert(false && "Forgot to call BeginIterateAnimObjDrawInfo?");
 			return false;
 		}
 		
-		if (!theHandler.IsValid()) {
+        if (!theHandler->IsValid()) {
 			assert(false && "The Animation handler is not valid.");
 			return false;
 		}
 		
-		SuperAnimMainDef *aMainDef = SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(theHandler.mMainDefKey);
+        SuperAnimMainDef *aMainDef = SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(theHandler->mMainDefKey);
 		if (aMainDef == NULL) {
 			assert(false && "I can't find the Animation definition.");
 			return false;
 		}
+        MYPRINT("Key: %s, frames: %d\n", theHandler->mMainDefKey.utf8().get_data(), aMainDef->mFrames.size());
 		
-		int aCurFrameNum = (int)theHandler.mCurFrameNum;
+        int aCurFrameNum = (int)theHandler->mCurFrameNum;
+        MYPRINT("CurrentFrame: %d\n", aCurFrameNum);
+
 		SuperAnimFrame *aCurFrame = &aMainDef->mFrames[aCurFrameNum];
 		if (sAnimObjIndex >= aCurFrame->mObjectVector.size()) {
 			// we have iterated all objects in this frame
@@ -277,10 +282,12 @@ namespace SuperAnim {
 		}
 		
 		SuperAnimObject *aCurObject = &aCurFrame->mObjectVector[sAnimObjIndex];
-		
+        MYPRINT("ObjIndex: %d, ObjNum: %d ResNum: %d\n", sAnimObjIndex, aCurObject->mObjectNum, aCurObject->mResNum);
+
 		// find the image, fill the sprite id
 		SuperAnimImage *aSuperAnimImage = &aMainDef->mImageVector[aCurObject->mResNum];
 		theOutputObjDrawInfo.mSpriteId = aSuperAnimImage->mSpriteId;
+        MYPRINT("%s : %p", aSuperAnimImage->mImageName.utf8().get_data(), aSuperAnimImage->mSpriteId);
 		
 		// do the interpolateion to next frame for transform & color
 		if (aCurFrameNum == aMainDef->mEndFrameNum) {
@@ -295,7 +302,7 @@ namespace SuperAnim {
 				SuperAnimObject *anObj = &aNextFrame->mObjectVector[i];
 				if (anObj->mObjectNum == aCurObject->mObjectNum &&
 					anObj->mResNum == aCurObject->mResNum) {
-					float anInterp = theHandler.mCurFrameNum - aCurFrameNum;
+                    float anInterp = theHandler->mCurFrameNum - aCurFrameNum;
 					theOutputObjDrawInfo.mTransform = aCurObject->mTransform.InterpolateTo(anObj->mTransform, anInterp);
 					theOutputObjDrawInfo.mColor = aCurObject->mColor.InterpolateTo(anObj->mColor, anInterp);
 					finishedInterp = true;
@@ -318,25 +325,26 @@ namespace SuperAnim {
 		theOutputObjDrawInfo.mTransform.mMatrix = theOutputObjDrawInfo.mTransform.mMatrix * aMatrix;
 		
 		sAnimObjIndex++;
+        MYPRINT("-IterateAnimObjDrawInfo\n");
 		return true;
 	}
 	
-	void IncAnimFrameNum(SuperAnimHandler &theMainDefHandler, float theDeltaTime, bool &hitNewLabel){
+    void IncAnimFrameNum(SuperAnimHandler *theMainDefHandler, float theDeltaTime, bool &hitNewLabel){
 		
-		if (!theMainDefHandler.IsValid()) {
+        if (!theMainDefHandler->IsValid()) {
 			return;
 		}
 		
-		int aLastFrameNum = (int)theMainDefHandler.mCurFrameNum;
-		theMainDefHandler.mCurFrameNum += theDeltaTime * theMainDefHandler.mAnimRate;
-		int aCurFrame = (int)theMainDefHandler.mCurFrameNum;
+        int aLastFrameNum = (int)theMainDefHandler->mCurFrameNum;
+        theMainDefHandler->mCurFrameNum += theDeltaTime * theMainDefHandler->mAnimRate;
+        int aCurFrame = (int)theMainDefHandler->mCurFrameNum;
 		
 		if (aCurFrame != aLastFrameNum) // Reach new frame
 		{
 			// Check whether reach a new label frame
 			bool aIsNewLabel = false;
-			if (aCurFrame >= theMainDefHandler.mLastFrameNumOfCurLabel) {
-				theMainDefHandler.mCurFrameNum = theMainDefHandler.mLastFrameNumOfCurLabel;
+            if (aCurFrame >= theMainDefHandler->mLastFrameNumOfCurLabel) {
+                theMainDefHandler->mCurFrameNum = theMainDefHandler->mLastFrameNumOfCurLabel;
 				aIsNewLabel = true;
 			}
 			
@@ -345,16 +353,19 @@ namespace SuperAnim {
 	}
 	
     bool HasSection(const SuperAnimHandler &theHandler, String theLabelName){
+        print_line("+HasSection(" + theHandler.mMainDefKey + ", " + theLabelName + ")");
+
 		SuperAnimMainDef *aMainDef = SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(theHandler.mMainDefKey);
 		if (aMainDef == NULL) {
+            print_line("-HasSection() NoMainDef Found");
 			return false;
 		}
 
         for(int i = 0; i <  aMainDef->mLabels.size(); i++){
             if(theLabelName == aMainDef->mLabels[i].mLabelName){
+                print_line("-HasSection() Label Found");
                 return true;
             }
-            return false;
         }
 //		for (SuperAnimLabelArray::const_iterator it = aMainDef->mLabels.begin(); it != aMainDef->mLabels.end(); ++it)
 //		{
@@ -366,11 +377,14 @@ namespace SuperAnim {
 	}
 	
     bool PlayBySection(SuperAnimHandler &theHandler, String theLabelName){
-		SuperAnimMainDef *aMainDef = SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(theHandler.mMainDefKey);
+        MYPRINT("+PlayBySection\n");
+		SuperAnimMainDef *aMainDef = SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(theHandler.mMainDefKey);        
 		if (aMainDef == NULL) {
+            OS::get_singleton()->print("MainDef: %p", aMainDef);
 			theHandler.mIsHandlerValid = false;
 			return false;
 		}
+
 
         for(int i = 0; i < aMainDef->mLabels.size(); i++){
             if(aMainDef->mLabels[i].mLabelName == theLabelName){
@@ -380,6 +394,7 @@ namespace SuperAnim {
                 theHandler.mFirstFrameNumOfCurLabel = it.mStartFrameNum;
                 theHandler.mLastFrameNumOfCurLabel = it.mEndFrameNum;
                 theHandler.mIsHandlerValid = true;
+                MYPRINT("-PlayBySection Success\n");
                 return true;
             }
         }
@@ -395,7 +410,7 @@ namespace SuperAnim {
 //				return true;
 //			}
 //		}
-		
+        MYPRINT("-PlayBySection Failed\n");
 		theHandler.mIsHandlerValid = false;
 		return false;
 	}
@@ -441,9 +456,12 @@ namespace SuperAnim {
 		}
 	}
 		
-    void SuperAnimDefMgr::addMainDef(const String &theSuperAnimFile, SuperAnimMainDef *ptr)
+    void SuperAnimDefMgr::addMainDef(const String &theSuperAnimFile, SuperAnimMainDef* ptr)
     {
+        MYPRINT("+SupserAnimDefMgr::addMainDef\n");
+        OS::get_singleton()->print("MainDef Added: %s %p\n", theSuperAnimFile.utf8().get_data(), ptr);
         mMainDefCache[theSuperAnimFile] = ptr;
+        MYPRINT("-SupserAnimDefMgr::addMainDef\n");
     }
 
     bool SuperAnimDefMgr::LoadSuperAnimMainDef(const String &theSuperAnimFile)
@@ -453,16 +471,19 @@ namespace SuperAnim {
 	
     SuperAnimMainDef *SuperAnimDefMgr::Load_GetSuperAnimMainDef(const String &theSuperAnimFile)
 	{
+        MYPRINT("+SuperAnimDefMgr::Load_GetSuperAnimMainDef(%s)\n", theSuperAnimFile.utf8().get_data());
         SuperAnimMainDefMap::Element *anItr = mMainDefCache.find(theSuperAnimFile);
         if (anItr != NULL)
         {
+            MYPRINT("-SuperAnimDefMgr::Load_GetSuperAnimMainDef() %p\n", anItr->value());
             return anItr->value();
         }
 		
-        if (LoadSuperAnimMainDef(theSuperAnimFile) == false)
-            return NULL;
+//        if (LoadSuperAnimMainDef(theSuperAnimFile) == false)
+//            return NULL;
 		
-        return Load_GetSuperAnimMainDef(theSuperAnimFile);
+//        return Load_GetSuperAnimMainDef(theSuperAnimFile);
+        return NULL;
 	}
 	
     void SuperAnimDefMgr::UnloadSuperAnimMainDef(const String &theName)

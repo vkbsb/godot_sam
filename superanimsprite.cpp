@@ -1,4 +1,5 @@
 #include "SuperAnimSprite.h"
+#include "core/os/os.h"
 
 namespace SuperAnim {
 
@@ -18,23 +19,48 @@ SuperAnimSpriteId SuperAnimSpriteMgr::LoadSuperAnimSprite(String theSpriteName){
         }
     }
 
+    print_line("loading the texture using ResourceLoader");
     //load the texture resource. typecast the pointer to void*
-    SuperAnimSpriteId sprId =  ResourceLoader::load(theSpriteName).ptr();
+    Ref<Texture> texRef =  ResourceLoader::load(theSpriteName);
+    if(texRef.is_null()){
+        print_line("texRef is Null!!");
+        return NULL;
+    }
+    SuperAnimSpriteId sprId = texRef.ptr();
 
     //create the SuperAnim Sprite instance.
     SuperAnimSprite *spritePtr = memnew(SuperAnimSprite);
     //initialize it with the texture instance.
     spritePtr->SetTexture(static_cast<CCTexture2D*>(sprId));
+    spritePtr->mTexRef = texRef; //saving the texture Ref so we ensure that this stays in mem.
     spritePtr->mStringId = theSpriteName;
 
     //set the map with the value.
-    mSuperAnimSpriteMap[sprId] = spritePtr;
+    mSuperAnimSpriteMap[spritePtr] = spritePtr;
 
-    print_line("-SuperAnimSpriteMgr::LoadSuperAnimSprite(..... new instance)");
-    return sprId;
+    OS::get_singleton()->print("-SuperAnimSpriteMgr::LoadSuperAnimSprite(..... new instance) %p", spritePtr);
+    return spritePtr;
 }
 
 static SuperAnimSpriteMgr * sInstance = NULL;
+
+void SuperAnimSpriteMgr::dumpSpritesInfo()
+{
+    print_line("------------------------");
+    for(IdToSuperAnimSpriteMap::Element *ptr = mSuperAnimSpriteMap.front();
+        ptr != NULL; ptr  = ptr->next()){
+        SuperAnimSprite *spritePtr = ptr->value();
+
+        ccV3F_C4B_T2F_Quad &aOriginQuad = spritePtr->mQuad;
+        OS::get_singleton()->print("Pointer: %p\n", spritePtr);
+        OS::get_singleton()->print("Point: (%f, %f, %f)\n", aOriginQuad.tl.texCoords.u,  aOriginQuad.tl.texCoords.v, aOriginQuad.tl.vertices.z);
+        OS::get_singleton()->print("Point: (%f, %f, %f)\n", aOriginQuad.bl.texCoords.u,  aOriginQuad.bl.texCoords.v, aOriginQuad.bl.vertices.z);
+        OS::get_singleton()->print("Point: (%f, %f, %f)\n", aOriginQuad.br.texCoords.u,  aOriginQuad.br.texCoords.v, aOriginQuad.br.vertices.z);
+        OS::get_singleton()->print("Point: (%f, %f, %f)\n", aOriginQuad.tr.texCoords.u,  aOriginQuad.tr.texCoords.v, aOriginQuad.tr.vertices.z);
+    }
+    print_line("----------End--------------");
+}
+
 SuperAnimSpriteMgr::SuperAnimSpriteMgr()
 {
 
@@ -160,15 +186,15 @@ void SuperAnimSprite::SetTexture(CCTexture2D *theTexture, CCRect theTextureRect)
     float aLeft, aRight, aTop, aBottom;
     aLeft = theTexturePixelRect.pos.x / aTextureWidth;
     aRight = (theTexturePixelRect.pos.x + theTexturePixelRect.size.width) / aTextureWidth;
-    aTop = theTexturePixelRect.pos.y / aTextureHeight;
-    aBottom = (theTexturePixelRect.pos.y + theTexturePixelRect.size.height) / aTextureHeight;
+    aTop = (theTexturePixelRect.pos.y + theTexturePixelRect.size.height) / aTextureHeight;
+    aBottom = theTexturePixelRect.pos.y / aTextureHeight;
 
+    mQuad.tl.texCoords.u = aLeft;
+    mQuad.tl.texCoords.v = aTop;
     mQuad.bl.texCoords.u = aLeft;
     mQuad.bl.texCoords.v = aBottom;
     mQuad.br.texCoords.u = aRight;
     mQuad.br.texCoords.v = aBottom;
-    mQuad.tl.texCoords.u = aLeft;
-    mQuad.tl.texCoords.v = aTop;
     mQuad.tr.texCoords.u = aRight;
     mQuad.tr.texCoords.v = aTop;
 
@@ -194,7 +220,10 @@ void SuperAnimSprite::SetTexture(CCTexture2D *theTexture, CCRect theTextureRect)
     mQuad.br.colors = aDefaultColor;
     mQuad.tl.colors = aDefaultColor;
     mQuad.tr.colors = aDefaultColor;
-
+//    OS::get_singleton()->print("Point: (%f, %f, %f)\n", mQuad.bl.vertices.x,  mQuad.bl.vertices.y, mQuad.bl.vertices.z);
+//    OS::get_singleton()->print("Point: (%f, %f, %f)\n", mQuad.br.vertices.x,  mQuad.br.vertices.y, mQuad.br.vertices.z);
+//    OS::get_singleton()->print("Point: (%f, %f, %f)\n", mQuad.tl.vertices.x,  mQuad.tl.vertices.y, mQuad.tl.vertices.z);
+//    OS::get_singleton()->print("Point: (%f, %f, %f)\n", mQuad.tr.vertices.x,  mQuad.tr.vertices.y, mQuad.tr.vertices.z);
     print_line("-SuperAnimSprite::SetTexture()");
 }
 

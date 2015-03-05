@@ -26,6 +26,7 @@
 #ifndef SuperAnimationMath_h
 #define SuperAnimationMath_h
 
+#include "core/os/os.h"
 #include <math.h>
 #include <string>
 #include "core/resource.h"
@@ -44,6 +45,10 @@
 #define MOVEFLAGS_COLOR			0x2000
 #define MOVEFLAGS_MATRIX		0x1000
 #define MOVEFLAGS_LONGCOORDS	0x0800
+
+
+#define MYPRINT
+//OS::get_singleton()->print
 
 namespace SuperAnim{
 
@@ -266,8 +271,8 @@ namespace SuperAnim{
 	// implemented by super animation core
     extern SuperAnimHandler GetSuperAnimHandler(const String &theAbsAnimFile);
 	extern void BeginIterateAnimObjDrawInfo();
-	extern bool IterateAnimObjDrawInfo(const SuperAnimHandler &theHandler, SuperAnimObjDrawInfo& theOutputObjDrawInfo);
-	extern void IncAnimFrameNum(SuperAnimHandler &theMainDefHandler, float theDeltaTime, bool &hitNewFrame);
+    extern bool IterateAnimObjDrawInfo(const SuperAnimHandler *theHandler, SuperAnimObjDrawInfo& theOutputObjDrawInfo);
+    extern void IncAnimFrameNum(SuperAnimHandler *theMainDefHandler, float theDeltaTime, bool &hitNewFrame);
     extern bool HasSection(const SuperAnimHandler &theHandler, String theLabelName);
     extern bool PlayBySection(SuperAnimHandler &theHandler, String theLabelName);
     extern bool LoadAnimFile(const String &theAbsAnimFile);

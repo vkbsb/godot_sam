@@ -5,6 +5,7 @@
 
 #include "core/io/file_access_buffered.h"
 #include "core/io/resource_loader.h"
+#include "core/os/os.h"
 
 /*------------- FUNCTIONS FOR SUPER ANIM ----------------*/
 // Operator between matrix & vertex
@@ -85,16 +86,18 @@ float SuperAnimNode::get_height(){
 
 void SuperAnimNode::_bind_methods() {
 
-    ObjectTypeDB::bind_method("add",&SuperAnimNode::add);
-    ObjectTypeDB::bind_method("reset",&SuperAnimNode::reset);
-    ObjectTypeDB::bind_method("get_total",&SuperAnimNode::get_total);
+//    ObjectTypeDB::bind_method("add",&SuperAnimNode::add);
+//    ObjectTypeDB::bind_method("reset",&SuperAnimNode::reset);
+//    ObjectTypeDB::bind_method("get_total",&SuperAnimNode::get_total);
     ObjectTypeDB::bind_method("get_height", &SuperAnimNode::get_height);
     ObjectTypeDB::bind_method("get_width", &SuperAnimNode::get_width);
     ObjectTypeDB::bind_method("load_anim", &SuperAnimNode::load_anim);
-
+    ObjectTypeDB::bind_method("play_section", &SuperAnimNode::PlaySection);
+    ObjectTypeDB::bind_method("pause", &SuperAnimNode::Pause);
+    ObjectTypeDB::bind_method("resume", &SuperAnimNode::Resume);
+    ObjectTypeDB::bind_method("has_section", &SuperAnimNode::HasSection);
 
 //    ADD_PROPERTY( PropertyInfo( Variant::Int, "width"), _SCS("set_offset"),_SCS("get_offset"));
-
 }
 
 SuperAnimNode::SuperAnimNode() {
@@ -106,26 +109,239 @@ SuperAnimNode::SuperAnimNode() {
     
     set_process(true);
 
+    mAnimState = kAnimStateInvalid;
+    mIsFlipX = mIsFlipY = false;
+    mSpeedFactor = 1.0f;
+    mIsLoop = false;
+    mCurFrameNum = 0;
+
+    p_points.resize(4);
+    p_uvs.resize(4);
+
     print_line("-SuperAnimNode::SuperAnimNode()");
 }
 
 
 void SuperAnimNode::load_anim(String resPath)
 {
-    Ref<SuperAnimData> samRes = ResourceLoader::load(resPath);
+    mSamRes = ResourceLoader::load(resPath);
 
     //we merge the details of SuerAnimDef into Node.
-    if( !samRes.is_null() ){
-        SuperAnimData *aMainDef = samRes.ptr();
+    if( !mSamRes.is_null() ){
+        SuperAnimData *aMainDef = mSamRes.ptr();
         this->mMainDefKey = aMainDef->get_path();
         this->mAnimRate = aMainDef->mAnimRate;
         this->mWidth = aMainDef->mWidth;
         this->mHeight = aMainDef->mHeight;
         this->mCurFrameNum = aMainDef->mStartFrameNum;
         this->mIsHandlerValid = true;
+        mAnimState = kAnimStateInitialized;
+
+        SuperAnim::SuperAnimSpriteMgr::GetInstance()->dumpSpritesInfo();
     } else {
         this->mIsHandlerValid = false;
     }
+}
+
+void SuperAnimNode::superAnimUpdate(float dt)
+{
+    if (mAnimState != kAnimStatePlaying)
+    {
+        return;
+    }
+
+    bool isNewLabel = false;
+    float anOriginFrameRate = mAnimRate;
+    mAnimRate *= mSpeedFactor;
+
+    SuperAnim::IncAnimFrameNum(this, dt, isNewLabel);
+    mAnimRate = anOriginFrameRate;
+
+    float aTimeFactor = (mCurFrameNum - mFirstFrameNumOfCurLabel) / (float)(mLastFrameNumOfCurLabel - mFirstFrameNumOfCurLabel);
+    emit_signal("AnimTimeEvent", mCurLabel, mCurFrameNum, aTimeFactor);
+
+
+    if (isNewLabel && mIsLoop) {
+        PlaySection(mCurLabel, mIsLoop);
+    }
+
+    if(isNewLabel){
+        emit_signal("AnimSectionEnd", mCurLabel);
+    }
+}
+
+
+bool SuperAnimNode::HasSection(const String &theLabelName){
+    return  SuperAnim::HasSection((*this), theLabelName);
+}
+
+void SuperAnimNode::setSpeedFactor(float theNewSpeedFactor){
+    mSpeedFactor = theNewSpeedFactor;
+}
+
+bool SuperAnimNode::PlaySection(const String &theLabel, bool isLoop)
+{
+    MYPRINT("+Node:PlaySection \n");
+    if (mAnimState == kAnimStateInvalid)
+    {
+//        CCAssert(false, "The animation isn't ready.");
+        print_line("The animation isn't ready.");
+        return false;
+    }
+
+    if (theLabel.empty())
+    {
+//        CCAssert(false, "Please specify an animation section label to play.");
+        print_line("Please specify an animation section label to play.");
+        return false;
+    }
+
+    SuperAnim::SuperAnimMainDef *aMainDef =  SuperAnim::SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(mMainDefKey);
+    if (aMainDef == NULL) {
+        OS::get_singleton()->print("MainDef: %p", aMainDef);
+        mIsHandlerValid = false;
+        return false;
+    }
+
+
+    for(int i = 0; i < aMainDef->mLabels.size(); i++){
+        if(aMainDef->mLabels[i].mLabelName == theLabel){
+            SuperAnim::SuperAnimLabel it = aMainDef->mLabels[i];
+            mCurFrameNum = it.mStartFrameNum;
+            mCurLabel = theLabel;
+            mFirstFrameNumOfCurLabel = it.mStartFrameNum;
+            mLastFrameNumOfCurLabel = it.mEndFrameNum;
+            mIsHandlerValid = true;
+            mIsLoop = isLoop;
+
+
+            mAnimState = kAnimStatePlaying;
+
+            MYPRINT("-Node:PlaySection Success\n");
+            return true;
+        }
+    }
+
+    mIsHandlerValid = false;
+
+    print_line("Could not find the specified label in animation.");
+    return false;
+}
+
+void SuperAnimNode::superAnimDraw()
+{
+    if (mAnimState == kAnimStateInvalid ||
+            mAnimState == kAnimStateInitialized)
+    {
+        return;
+    }
+
+    if (!IsValid()) {
+        return;
+    }
+
+    MYPRINT("+SuperAnimNode::superAnimDraw()\n");
+
+
+    static SuperAnim::SuperAnimObjDrawInfo sAnimObjDrawnInfo;
+    //float aPixelToPointScale = 1.0f / CC_CONTENT_SCALE_FACTOR();
+    float anAnimContentHeightInPixel = mHeight;
+    SuperAnim::BeginIterateAnimObjDrawInfo();
+
+    while (SuperAnim::IterateAnimObjDrawInfo(this, sAnimObjDrawnInfo)) {
+        if (sAnimObjDrawnInfo.mSpriteId == InvalidSuperAnimSpriteId) {
+//            assert(false, "Missing a sprite.");
+            print_line("missing a sprite");
+            continue;
+        }
+
+        // check whether this sprite has been replaced
+        SuperAnim::SuperAnimSpriteId aCurSpriteId = sAnimObjDrawnInfo.mSpriteId;
+
+        //TODO: Handling the sprite replace situation.
+//        SuperAnim::SuperSpriteIdToSuperSpriteIdMap::Element *anIter = mReplacedSpriteMap.find(aCurSpriteId);
+//        if (anIter != mReplacedSpriteMap.end()) {
+//            aCurSpriteId = anIter->second;
+//        }
+
+        //SuperAnimSprite *aSprite = SuperAnimSpriteMgr::GetInstance()->GetSpriteById(aCurSpriteId);
+        SuperAnim::SuperAnimSprite *aSprite = (SuperAnim::SuperAnimSprite*)aCurSpriteId;
+        if (aSprite == NULL){
+//            assert(false, "Missing a sprite.");
+            print_line("Missing a sprite.");
+            continue;
+        }
+
+        ccV3F_C4B_T2F_Quad aOriginQuad = aSprite->mQuad;
+        MYPRINT("Pointer: %p\n", aSprite);
+        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.bl.vertices.x,  aOriginQuad.bl.vertices.y, aOriginQuad.bl.vertices.z);
+        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.br.vertices.x,  aOriginQuad.br.vertices.y, aOriginQuad.br.vertices.z);
+        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.tl.vertices.x,  aOriginQuad.tl.vertices.y, aOriginQuad.tl.vertices.z);
+        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.tr.vertices.x,  aOriginQuad.tr.vertices.y, aOriginQuad.tr.vertices.z);
+
+        //TODO: enable sprite sheeets.
+//        // safe check!!
+//        if (mUseSpriteSheet) {
+//            CCAssert(mSpriteSheet == aSprite->mTexture, "must in the same texture!!");
+//        }
+
+        // cocos2d the origin is located at left bottom, but is in left top in flash
+        sAnimObjDrawnInfo.mTransform.mMatrix.m12 = anAnimContentHeightInPixel - sAnimObjDrawnInfo.mTransform.mMatrix.m12;
+
+        aSprite->mQuad = sAnimObjDrawnInfo.mTransform.mMatrix * aSprite->mQuad;
+        ccColor4B aColor = ccc4(sAnimObjDrawnInfo.mColor.mRed, sAnimObjDrawnInfo.mColor.mGreen, sAnimObjDrawnInfo.mColor.mBlue, sAnimObjDrawnInfo.mColor.mAlpha);
+        aSprite->mQuad.bl.colors = aColor;
+        aSprite->mQuad.br.colors = aColor;
+        aSprite->mQuad.tl.colors = aColor;
+        aSprite->mQuad.tr.colors = aColor;
+
+        if (mIsFlipX) {
+            float aWidthinPixel = mWidth;
+            aSprite->mQuad.bl.vertices.x = aWidthinPixel - aSprite->mQuad.bl.vertices.x;
+            aSprite->mQuad.br.vertices.x = aWidthinPixel - aSprite->mQuad.br.vertices.x;
+            aSprite->mQuad.tl.vertices.x = aWidthinPixel - aSprite->mQuad.tl.vertices.x;
+            aSprite->mQuad.tr.vertices.x = aWidthinPixel - aSprite->mQuad.tr.vertices.x;
+        }
+
+        if (mIsFlipY) {
+            float aHeightinPixel = mHeight;
+            aSprite->mQuad.bl.vertices.y = aHeightinPixel - aSprite->mQuad.bl.vertices.y;
+            aSprite->mQuad.br.vertices.y = aHeightinPixel - aSprite->mQuad.br.vertices.y;
+            aSprite->mQuad.tl.vertices.y = aHeightinPixel - aSprite->mQuad.tl.vertices.y;
+            aSprite->mQuad.tr.vertices.y = aHeightinPixel - aSprite->mQuad.tr.vertices.y;
+        }
+
+        // draw
+//        if (!mUseSpriteSheet)
+        {
+            p_points[0].x = aSprite->mQuad.tl.vertices.x;
+            p_points[0].y = aSprite->mQuad.tl.vertices.y;
+            p_uvs[0].x = aSprite->mQuad.tl.texCoords.u;
+            p_uvs[0].y = aSprite->mQuad.tl.texCoords.v;
+
+            p_points[1].x = aSprite->mQuad.bl.vertices.x;
+            p_points[1].y = aSprite->mQuad.bl.vertices.y;
+            p_uvs[1].x = aSprite->mQuad.bl.texCoords.u;
+            p_uvs[1].y = aSprite->mQuad.bl.texCoords.v;
+
+            p_points[2].x = aSprite->mQuad.br.vertices.x;
+            p_points[2].y = aSprite->mQuad.br.vertices.y;
+            p_uvs[2].x = aSprite->mQuad.br.texCoords.u;
+            p_uvs[2].y = aSprite->mQuad.br.texCoords.v;
+
+            p_points[3].x = aSprite->mQuad.tr.vertices.x;
+            p_points[3].y = aSprite->mQuad.tr.vertices.y;
+            p_uvs[3].x = aSprite->mQuad.tr.texCoords.u;
+            p_uvs[3].y = aSprite->mQuad.tr.texCoords.v;
+
+            Color c(aColor.r/255.0, aColor.g/255.0, aColor.b/255.0, aColor.a/255.0);
+
+            draw_colored_polygon(p_points, c, p_uvs, aSprite->mTexRef);
+        }
+
+        aSprite->mQuad = aOriginQuad;
+    }
+    MYPRINT("-SuperAnimNode::superAnimDraw()\n");
 }
 
 void SuperAnimNode::_notification(int p_what){
@@ -133,25 +349,30 @@ void SuperAnimNode::_notification(int p_what){
         case NOTIFICATION_PROCESS:{
             Node::_notification(p_what);
             float dt = get_process_delta_time();
-            myColor.g += dt;
-            myColor.a -= dt;
+
+//            myColor.g += dt;
+//            myColor.a -= dt;
             
-            if(myColor.g > 1){
-                myColor.g = 0;
-            }
+//            if(myColor.g > 1){
+//                myColor.g = 0;
+//            }
             
-            if(myColor.a < 0.2){
-                myColor.a = 1;
-            }
+//            if(myColor.a < 0.2){
+//                myColor.a = 1;
+//            }
+
+            superAnimUpdate(dt);
+
             update();
             break;
         }
             
         //node gets a notification whenever there is an update in display required.
         case NOTIFICATION_DRAW: {
-            RID ci = get_canvas_item();
-            Rect2 rect = Rect2(0, 0, 100, 100);
-            draw_rect(rect, myColor);
+//            RID ci = get_canvas_item();
+//            Rect2 rect = Rect2(0, 0, 100, 100);
+//            draw_rect(rect, myColor);
+            superAnimDraw();
             break;
         }
     }
