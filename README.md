@@ -2,6 +2,9 @@
 GoDot Engine module for loading SAM (Super Animation Format)
 The code is ported from cocos2d-x loader to GoDot Engine.
 
+Here it is in Action:
+https://www.youtube.com/watch?v=LGIUc5MNic4
+
 #Super Animation:
 Super Animation Format is a custom export format for flash animations. 
 The cocos2d-x loader for the format is opensource but the exporter is not 
