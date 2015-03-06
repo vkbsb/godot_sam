@@ -21,6 +21,8 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
     Ref<SuperAnimData> mSamRes;
 
 
+    bool showStage;
+
     Vector<Point2> p_points;
     Vector<Point2> p_uvs;
 
@@ -51,6 +53,9 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
 
     float get_width();
     float get_height();
+
+    void set_sam(const Ref<SuperAnimData>);
+    Ref<SuperAnimData> get_sam() const;
 
     //load the resource string and get the corresponding handle.
     void load_anim(String resPath);

@@ -86,9 +86,6 @@ float SuperAnimNode::get_height(){
 
 void SuperAnimNode::_bind_methods() {
 
-//    ObjectTypeDB::bind_method("add",&SuperAnimNode::add);
-//    ObjectTypeDB::bind_method("reset",&SuperAnimNode::reset);
-//    ObjectTypeDB::bind_method("get_total",&SuperAnimNode::get_total);
     ObjectTypeDB::bind_method("get_height", &SuperAnimNode::get_height);
     ObjectTypeDB::bind_method("get_width", &SuperAnimNode::get_width);
     ObjectTypeDB::bind_method("load_anim", &SuperAnimNode::load_anim);
@@ -97,7 +94,17 @@ void SuperAnimNode::_bind_methods() {
     ObjectTypeDB::bind_method("resume", &SuperAnimNode::Resume);
     ObjectTypeDB::bind_method("has_section", &SuperAnimNode::HasSection);
 
-//    ADD_PROPERTY( PropertyInfo( Variant::Int, "width"), _SCS("set_offset"),_SCS("get_offset"));
+//    emit_signal("AnimTimeEvent", mCurLabel, mCurFrameNum, aTimeFactor);
+    ADD_SIGNAL(MethodInfo("AnimTimeEvent", PropertyInfo(Variant::STRING, "label"), PropertyInfo(Variant::INT, "mCurFrameNum"), PropertyInfo(Variant::REAL, "timeFactor")));
+    ADD_SIGNAL(MethodInfo("AnimSectionEnd", PropertyInfo(Variant::STRING, "label")));
+
+
+
+//    ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "SuperAnim", PROPERTY_HINT_RESOURCE_TYPE,"SuperAnim"), _SCS("set_sam"), _SCS("get_sam"));
+//    ObjectTypeDB::add_property("sam", PropertyInfo(Variant::OBJECT, "sam"), _SCS("set_sam"), _SCS(""));
+
+
+    //    ADD_PROPERTY( PropertyInfo( Variant::Int, "width"), _SCS("set_offset"),_SCS("get_offset"));
 }
 
 SuperAnimNode::SuperAnimNode() {
@@ -118,9 +125,40 @@ SuperAnimNode::SuperAnimNode() {
     p_points.resize(4);
     p_uvs.resize(4);
 
+    showStage = true;
+
     print_line("-SuperAnimNode::SuperAnimNode()");
 }
 
+void SuperAnimNode::set_sam(const Ref<SuperAnimData> samRes)
+{
+    if(samRes == mSamRes){
+        return;
+    }
+
+    mSamRes = samRes;
+
+    //we merge the details of SuerAnimDef into Node.
+    if( !mSamRes.is_null() ){
+        SuperAnimData *aMainDef = mSamRes.ptr();
+        this->mMainDefKey = aMainDef->get_path();
+        this->mAnimRate = aMainDef->mAnimRate;
+        this->mWidth = aMainDef->mWidth;
+        this->mHeight = aMainDef->mHeight;
+        this->mCurFrameNum = aMainDef->mStartFrameNum;
+        this->mIsHandlerValid = true;
+        mAnimState = kAnimStateInitialized;
+
+        SuperAnim::SuperAnimSpriteMgr::GetInstance()->dumpSpritesInfo();
+    } else {
+        this->mIsHandlerValid = false;
+    }
+}
+
+Ref<SuperAnimData> SuperAnimNode::get_sam() const{
+
+    return mSamRes;
+}
 
 void SuperAnimNode::load_anim(String resPath)
 {
@@ -286,7 +324,11 @@ void SuperAnimNode::superAnimDraw()
 //        }
 
         // cocos2d the origin is located at left bottom, but is in left top in flash
-        sAnimObjDrawnInfo.mTransform.mMatrix.m12 = anAnimContentHeightInPixel - sAnimObjDrawnInfo.mTransform.mMatrix.m12;
+//        sAnimObjDrawnInfo.mTransform.mMatrix.m12 = anAnimContentHeightInPixel - sAnimObjDrawnInfo.mTransform.mMatrix.m12;
+
+        //FIX: rotation fix on the matrix so the animations look fine.
+        sAnimObjDrawnInfo.mTransform.mMatrix.m01 *= -1;
+        sAnimObjDrawnInfo.mTransform.mMatrix.m10 *= -1;
 
         aSprite->mQuad = sAnimObjDrawnInfo.mTransform.mMatrix * aSprite->mQuad;
         ccColor4B aColor = ccc4(sAnimObjDrawnInfo.mColor.mRed, sAnimObjDrawnInfo.mColor.mGreen, sAnimObjDrawnInfo.mColor.mBlue, sAnimObjDrawnInfo.mColor.mAlpha);
@@ -337,6 +379,7 @@ void SuperAnimNode::superAnimDraw()
             Color c(aColor.r/255.0, aColor.g/255.0, aColor.b/255.0, aColor.a/255.0);
 
             draw_colored_polygon(p_points, c, p_uvs, aSprite->mTexRef);
+//            draw_colored_polygon(p_points, Color(0, 0.5, 0, 0.2));
         }
 
         aSprite->mQuad = aOriginQuad;
@@ -372,6 +415,13 @@ void SuperAnimNode::_notification(int p_what){
 //            RID ci = get_canvas_item();
 //            Rect2 rect = Rect2(0, 0, 100, 100);
 //            draw_rect(rect, myColor);
+
+            draw_line(Vector2(0, 0), Vector2(0, 100), Color(0, 0, 1), 2);
+            draw_line(Vector2(0, 0), Vector2(100, 0), Color(1, 0, 0), 2);
+            if(showStage){
+                Rect2 rect = Rect2(0, 0, mWidth, mHeight);
+                draw_rect(rect, Color(1, 1, 1, 0.2));
+            }
             superAnimDraw();
             break;
         }
