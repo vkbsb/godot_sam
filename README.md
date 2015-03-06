@@ -11,3 +11,5 @@ https://github.com/raymondlu/super-animation-samples
 There are a bunch of other tools that do the same thing. Alternatives include GAF, DragonBones, SWiffy and many more i might not know about. The reason i picked SAM format is because of the simplicity of the format and i have worked a lot with it.
 
 #USAGE
+Check the wiki page for details 
+https://github.com/vkbsb/godot_sam/wiki
