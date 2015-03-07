@@ -87,6 +87,13 @@ void SuperAnimNode::_bind_methods() {
     ADD_SIGNAL(MethodInfo("AnimTimeEvent", PropertyInfo(Variant::STRING, "label"), PropertyInfo(Variant::INT, "mCurFrameNum"), PropertyInfo(Variant::REAL, "timeFactor")));
     ADD_SIGNAL(MethodInfo("AnimSectionEnd", PropertyInfo(Variant::STRING, "label")));
 
+
+    /*
+     * NOTE: as you can see below, if you want the properties to show up in the node inspector
+     * of GoDot Editor, we have to have the methods bound to strings before they can be used
+     * in the ADD_PROPERTY call.
+     */
+
     //add boolean which lets you show stage borders.
     ObjectTypeDB::bind_method("set_showstage", &SuperAnimNode::set_showstage);
     ObjectTypeDB::bind_method("is_showstage", &SuperAnimNode::is_showstage);
@@ -107,6 +114,8 @@ void SuperAnimNode::_bind_methods() {
     //ui element for loading the sam file from editor.
     ObjectTypeDB::bind_method("set_sam", &SuperAnimNode::set_sam);
     ObjectTypeDB::bind_method("get_sam", &SuperAnimNode::get_sam);
+
+    //the strings provided here as property_hint are based on the strings we use in the ResourceLoader class.
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "SuperAnim", PROPERTY_HINT_RESOURCE_TYPE,"SuperAnim"), _SCS("set_sam"), _SCS("get_sam"));
 }
 

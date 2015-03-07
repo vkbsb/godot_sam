@@ -310,6 +310,7 @@ RES SuperAnimDataFormatLoader::load(const String &p_path,const String& p_origina
 
 void SuperAnimDataFormatLoader::get_recognized_extensions(List<String> *p_extensions) const
 {
+    //We are declaring here that this Loader handles files with ".sam" extension.
     MYPRINT("+SuperAnimDataFormatLoader::get_recognized_extensions()\n");
     p_extensions->push_back("sam");
     MYPRINT("-SuperAnimDataFormatLoader::get_recognized_extensions()\n");
@@ -318,6 +319,8 @@ void SuperAnimDataFormatLoader::get_recognized_extensions(List<String> *p_extens
 bool SuperAnimDataFormatLoader::handles_type(const String& p_type) const
 {
     MYPRINT("SuperAnimDataFormatLoader::handle_type(%s)\n", p_type.utf8().get_data());
+    //the ptype is generally the Class name of the Resource we declared that will be loaded by this loader.
+    //it is "SuperAnimData" here. but rest of them are put in just as a precaution.
     return (p_type == "sam" || p_type == "SuperAnim" || p_type == "SuperAnimData");
 }
 
