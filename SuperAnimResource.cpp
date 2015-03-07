@@ -310,12 +310,15 @@ RES SuperAnimDataFormatLoader::load(const String &p_path,const String& p_origina
 
 void SuperAnimDataFormatLoader::get_recognized_extensions(List<String> *p_extensions) const
 {
+    MYPRINT("+SuperAnimDataFormatLoader::get_recognized_extensions()\n");
     p_extensions->push_back("sam");
+    MYPRINT("-SuperAnimDataFormatLoader::get_recognized_extensions()\n");
 }
 
 bool SuperAnimDataFormatLoader::handles_type(const String& p_type) const
 {
-    return (p_type == "sam" || p_type == "SuperAnim");
+    MYPRINT("SuperAnimDataFormatLoader::handle_type(%s)\n", p_type.utf8().get_data());
+    return (p_type == "sam" || p_type == "SuperAnim" || p_type == "SuperAnimData");
 }
 
 String SuperAnimDataFormatLoader::get_resource_type(const String &p_path) const
@@ -326,4 +329,27 @@ String SuperAnimDataFormatLoader::get_resource_type(const String &p_path) const
         return "SuperAnim";
     }
     return "";
+}
+
+
+
+Error SuperAnimDataFormatSaver::save(const String &p_path,const RES& p_resource,uint32_t p_flags)
+{
+    MYPRINT("+SupserAnimDataFormatSaver::save(%s)", p_path.utf8().get_data());
+
+    print_line(p_path);
+    MYPRINT("-SupserAnimDataFormatSaver::save(%s)", p_path.utf8().get_data());
+}
+
+void SuperAnimDataFormatSaver::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const
+{
+    if (p_resource->cast_to<SuperAnimData>()) {
+        p_extensions->push_back("sam");
+    }
+
+}
+
+bool SuperAnimDataFormatSaver::recognize(const RES& p_resource) const
+{
+    return p_resource->cast_to<SuperAnimData>()!=NULL;
 }

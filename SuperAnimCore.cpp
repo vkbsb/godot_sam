@@ -253,7 +253,7 @@ namespace SuperAnim {
 	}
 	
     bool IterateAnimObjDrawInfo(const SuperAnimHandler *theHandler, SuperAnimObjDrawInfo& theOutputObjDrawInfo){
-        MYPRINT("+IterateAnimObjDrawInfo\n");
+//        MYPRINT("+IterateAnimObjDrawInfo\n");
 		if (!sShouldStartAnimObjDrawItr) {
 			assert(false && "Forgot to call BeginIterateAnimObjDrawInfo?");
 			return false;
@@ -269,10 +269,10 @@ namespace SuperAnim {
 			assert(false && "I can't find the Animation definition.");
 			return false;
 		}
-        MYPRINT("Key: %s, frames: %d\n", theHandler->mMainDefKey.utf8().get_data(), aMainDef->mFrames.size());
+//        MYPRINT("Key: %s, frames: %d\n", theHandler->mMainDefKey.utf8().get_data(), aMainDef->mFrames.size());
 		
         int aCurFrameNum = (int)theHandler->mCurFrameNum;
-        MYPRINT("CurrentFrame: %d\n", aCurFrameNum);
+//        MYPRINT("CurrentFrame: %d\n", aCurFrameNum);
 
 		SuperAnimFrame *aCurFrame = &aMainDef->mFrames[aCurFrameNum];
 		if (sAnimObjIndex >= aCurFrame->mObjectVector.size()) {
@@ -282,12 +282,12 @@ namespace SuperAnim {
 		}
 		
 		SuperAnimObject *aCurObject = &aCurFrame->mObjectVector[sAnimObjIndex];
-        MYPRINT("ObjIndex: %d, ObjNum: %d ResNum: %d\n", sAnimObjIndex, aCurObject->mObjectNum, aCurObject->mResNum);
+//        MYPRINT("ObjIndex: %d, ObjNum: %d ResNum: %d\n", sAnimObjIndex, aCurObject->mObjectNum, aCurObject->mResNum);
 
 		// find the image, fill the sprite id
 		SuperAnimImage *aSuperAnimImage = &aMainDef->mImageVector[aCurObject->mResNum];
 		theOutputObjDrawInfo.mSpriteId = aSuperAnimImage->mSpriteId;
-        MYPRINT("%s : %p", aSuperAnimImage->mImageName.utf8().get_data(), aSuperAnimImage->mSpriteId);
+//        MYPRINT("%s : %p", aSuperAnimImage->mImageName.utf8().get_data(), aSuperAnimImage->mSpriteId);
 		
 		// do the interpolateion to next frame for transform & color
 		if (aCurFrameNum == aMainDef->mEndFrameNum) {
@@ -325,7 +325,7 @@ namespace SuperAnim {
 		theOutputObjDrawInfo.mTransform.mMatrix = theOutputObjDrawInfo.mTransform.mMatrix * aMatrix;
 		
 		sAnimObjIndex++;
-        MYPRINT("-IterateAnimObjDrawInfo\n");
+//        MYPRINT("-IterateAnimObjDrawInfo\n");
 		return true;
 	}
 	
@@ -471,11 +471,11 @@ namespace SuperAnim {
 	
     SuperAnimMainDef *SuperAnimDefMgr::Load_GetSuperAnimMainDef(const String &theSuperAnimFile)
 	{
-        MYPRINT("+SuperAnimDefMgr::Load_GetSuperAnimMainDef(%s)\n", theSuperAnimFile.utf8().get_data());
+//        MYPRINT("+SuperAnimDefMgr::Load_GetSuperAnimMainDef(%s)\n", theSuperAnimFile.utf8().get_data());
         SuperAnimMainDefMap::Element *anItr = mMainDefCache.find(theSuperAnimFile);
         if (anItr != NULL)
         {
-            MYPRINT("-SuperAnimDefMgr::Load_GetSuperAnimMainDef() %p\n", anItr->value());
+//            MYPRINT("-SuperAnimDefMgr::Load_GetSuperAnimMainDef() %p\n", anItr->value());
             return anItr->value();
         }
 		

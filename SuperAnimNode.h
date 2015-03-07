@@ -18,10 +18,13 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
     float mSpeedFactor;
     bool mIsLoop;
     AnimState mAnimState;
-    Ref<SuperAnimData> mSamRes;
 
-
+    //properties to show.
     bool showStage;
+    bool showAxis;
+
+    Ref<SuperAnimData> mSamRes;
+    StringArray mSections;
 
     Vector<Point2> p_points;
     Vector<Point2> p_uvs;
@@ -45,14 +48,19 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
     bool IsPlaying();
     int GetCurFrame();
     int GetId();
+
+    //set the section that is played now.
     String GetCurSectionName();
-    //functions to expose
-    void add(int value);
-    void reset();
-    int get_total() const;
+    void SetCurSectionName(String section);
 
     float get_width();
     float get_height();
+
+    void set_showstage(bool p_ShowStage);
+    bool is_showstage() const;
+
+    void set_showaxis(bool p_ShowAxis);
+    bool is_showaxis() const;
 
     void set_sam(const Ref<SuperAnimData>);
     Ref<SuperAnimData> get_sam() const;

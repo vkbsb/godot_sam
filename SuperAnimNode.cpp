@@ -56,24 +56,13 @@ int SuperAnimNode::GetId(){
     return mId;
 }
 
+void SuperAnimNode::SetCurSectionName(String section)
+{
+    PlaySection(section, true);
+}
+
 String SuperAnimNode::GetCurSectionName(){
     return mCurLabel;
-}
-
-
-void SuperAnimNode::add(int value) {
-
-    count+=value;
-}
-
-void SuperAnimNode::reset() {
-
-    count=0;
-}
-
-int SuperAnimNode::get_total() const {
-
-    return count;
 }
 
 float SuperAnimNode::get_width(){
@@ -94,17 +83,31 @@ void SuperAnimNode::_bind_methods() {
     ObjectTypeDB::bind_method("resume", &SuperAnimNode::Resume);
     ObjectTypeDB::bind_method("has_section", &SuperAnimNode::HasSection);
 
-//    emit_signal("AnimTimeEvent", mCurLabel, mCurFrameNum, aTimeFactor);
+
     ADD_SIGNAL(MethodInfo("AnimTimeEvent", PropertyInfo(Variant::STRING, "label"), PropertyInfo(Variant::INT, "mCurFrameNum"), PropertyInfo(Variant::REAL, "timeFactor")));
     ADD_SIGNAL(MethodInfo("AnimSectionEnd", PropertyInfo(Variant::STRING, "label")));
 
+    //add boolean which lets you show stage borders.
+    ObjectTypeDB::bind_method("set_showstage", &SuperAnimNode::set_showstage);
+    ObjectTypeDB::bind_method("is_showstage", &SuperAnimNode::is_showstage);
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "showstage"), _SCS("set_showstage"),_SCS("is_showstage"));
 
 
-//    ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "SuperAnim", PROPERTY_HINT_RESOURCE_TYPE,"SuperAnim"), _SCS("set_sam"), _SCS("get_sam"));
-//    ObjectTypeDB::add_property("sam", PropertyInfo(Variant::OBJECT, "sam"), _SCS("set_sam"), _SCS(""));
+    //add boolean which lets you show axis.
+    ObjectTypeDB::bind_method("set_showaxis", &SuperAnimNode::set_showaxis);
+    ObjectTypeDB::bind_method("is_showaxis", &SuperAnimNode::is_showaxis);
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "showaxis"), _SCS("set_showaxis"),_SCS("is_showaxis"));
 
 
-    //    ADD_PROPERTY( PropertyInfo( Variant::Int, "width"), _SCS("set_offset"),_SCS("get_offset"));
+    //ui element for loading the sam file from editor.
+    ObjectTypeDB::bind_method("set_section", &SuperAnimNode::SetCurSectionName);
+    ObjectTypeDB::bind_method("get_section", &SuperAnimNode::GetCurSectionName);
+    ADD_PROPERTY( PropertyInfo( Variant::STRING, "CurSection"), _SCS("set_section"), _SCS("get_section"));
+
+    //ui element for loading the sam file from editor.
+    ObjectTypeDB::bind_method("set_sam", &SuperAnimNode::set_sam);
+    ObjectTypeDB::bind_method("get_sam", &SuperAnimNode::get_sam);
+    ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "SuperAnim", PROPERTY_HINT_RESOURCE_TYPE,"SuperAnim"), _SCS("set_sam"), _SCS("get_sam"));
 }
 
 SuperAnimNode::SuperAnimNode() {
@@ -130,12 +133,28 @@ SuperAnimNode::SuperAnimNode() {
     print_line("-SuperAnimNode::SuperAnimNode()");
 }
 
+void SuperAnimNode::set_showaxis(bool p_ShowAxis)
+{
+    showAxis = p_ShowAxis;
+}
+
+bool SuperAnimNode::is_showaxis() const
+{
+    return showAxis;
+}
+
+void SuperAnimNode::set_showstage(bool p_ShowStage)
+{
+    showStage = p_ShowStage;
+}
+
+bool SuperAnimNode::is_showstage() const
+{
+    return showStage;
+}
+
 void SuperAnimNode::set_sam(const Ref<SuperAnimData> samRes)
 {
-    if(samRes == mSamRes){
-        return;
-    }
-
     mSamRes = samRes;
 
     //we merge the details of SuerAnimDef into Node.
@@ -149,7 +168,6 @@ void SuperAnimNode::set_sam(const Ref<SuperAnimData> samRes)
         this->mIsHandlerValid = true;
         mAnimState = kAnimStateInitialized;
 
-        SuperAnim::SuperAnimSpriteMgr::GetInstance()->dumpSpritesInfo();
     } else {
         this->mIsHandlerValid = false;
     }
@@ -164,6 +182,7 @@ void SuperAnimNode::load_anim(String resPath)
 {
     mSamRes = ResourceLoader::load(resPath);
 
+//    set_sam(samRes);
     //we merge the details of SuerAnimDef into Node.
     if( !mSamRes.is_null() ){
         SuperAnimData *aMainDef = mSamRes.ptr();
@@ -175,7 +194,7 @@ void SuperAnimNode::load_anim(String resPath)
         this->mIsHandlerValid = true;
         mAnimState = kAnimStateInitialized;
 
-        SuperAnim::SuperAnimSpriteMgr::GetInstance()->dumpSpritesInfo();
+//        SuperAnim::SuperAnimSpriteMgr::GetInstance()->dumpSpritesInfo();
     } else {
         this->mIsHandlerValid = false;
     }
@@ -278,7 +297,7 @@ void SuperAnimNode::superAnimDraw()
         return;
     }
 
-    MYPRINT("+SuperAnimNode::superAnimDraw()\n");
+//    MYPRINT("+SuperAnimNode::superAnimDraw()\n");
 
 
     static SuperAnim::SuperAnimObjDrawInfo sAnimObjDrawnInfo;
@@ -311,11 +330,11 @@ void SuperAnimNode::superAnimDraw()
         }
 
         ccV3F_C4B_T2F_Quad aOriginQuad = aSprite->mQuad;
-        MYPRINT("Pointer: %p\n", aSprite);
-        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.bl.vertices.x,  aOriginQuad.bl.vertices.y, aOriginQuad.bl.vertices.z);
-        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.br.vertices.x,  aOriginQuad.br.vertices.y, aOriginQuad.br.vertices.z);
-        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.tl.vertices.x,  aOriginQuad.tl.vertices.y, aOriginQuad.tl.vertices.z);
-        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.tr.vertices.x,  aOriginQuad.tr.vertices.y, aOriginQuad.tr.vertices.z);
+//        MYPRINT("Pointer: %p\n", aSprite);
+//        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.bl.vertices.x,  aOriginQuad.bl.vertices.y, aOriginQuad.bl.vertices.z);
+//        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.br.vertices.x,  aOriginQuad.br.vertices.y, aOriginQuad.br.vertices.z);
+//        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.tl.vertices.x,  aOriginQuad.tl.vertices.y, aOriginQuad.tl.vertices.z);
+//        MYPRINT("Point: (%f, %f, %f)\n", aOriginQuad.tr.vertices.x,  aOriginQuad.tr.vertices.y, aOriginQuad.tr.vertices.z);
 
         //TODO: enable sprite sheeets.
 //        // safe check!!
@@ -384,7 +403,7 @@ void SuperAnimNode::superAnimDraw()
 
         aSprite->mQuad = aOriginQuad;
     }
-    MYPRINT("-SuperAnimNode::superAnimDraw()\n");
+//    MYPRINT("-SuperAnimNode::superAnimDraw()\n");
 }
 
 void SuperAnimNode::_notification(int p_what){
@@ -415,9 +434,10 @@ void SuperAnimNode::_notification(int p_what){
 //            RID ci = get_canvas_item();
 //            Rect2 rect = Rect2(0, 0, 100, 100);
 //            draw_rect(rect, myColor);
-
-            draw_line(Vector2(0, 0), Vector2(0, 100), Color(0, 0, 1), 2);
-            draw_line(Vector2(0, 0), Vector2(100, 0), Color(1, 0, 0), 2);
+            if(showAxis){
+                draw_line(Vector2(0, 0), Vector2(0, 100), Color(0, 0, 1), 2);
+                draw_line(Vector2(0, 0), Vector2(100, 0), Color(1, 0, 0), 2);
+            }
             if(showStage){
                 Rect2 rect = Rect2(0, 0, mWidth, mHeight);
                 draw_rect(rect, Color(1, 1, 1, 0.2));

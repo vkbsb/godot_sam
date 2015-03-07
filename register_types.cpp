@@ -31,15 +31,20 @@
 #include "SuperAnimNode.h"
 #include "SuperAnimResource.h"
 
-
 SuperAnimDataFormatLoader *resource_loader_sam = NULL;
+SuperAnimDataFormatSaver *resource_saver_sam = NULL;
 
 void register_superanim_types() {
+    MYPRINT("+Registring the SuperAnim\n");
     ObjectTypeDB::register_type<SuperAnimNode>();
     ObjectTypeDB::register_type<SuperAnimData>();
 
     resource_loader_sam = memnew( SuperAnimDataFormatLoader );
 	ResourceLoader::add_resource_format_loader(resource_loader_sam);
+
+//    resource_saver_sam = memnew( SuperAnimDataFormatSaver );
+//    ResourceSaver::add_resource_format_saver(resource_saver_sam);
+    MYPRINT("-Registring the SuperAnim\n");
 }
 
 
@@ -49,5 +54,10 @@ void unregister_superanim_types() {
     if(resource_loader_sam){
         memdelete(resource_loader_sam);
         resource_loader_sam = NULL;
+    }
+
+    if(resource_saver_sam){
+        memdelete(resource_saver_sam);
+        resource_saver_sam = NULL;
     }
 }
