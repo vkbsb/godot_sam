@@ -19,6 +19,9 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
     bool mIsLoop;
     AnimState mAnimState;
 
+    //sprite replacement
+    SuperAnim::IdToSuperAnimSpriteMap mReplacedSpriteMap;
+
     //properties to show.
     bool showStage;
     bool showAxis;
@@ -64,6 +67,9 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
 
     void set_sam(const Ref<SuperAnimData>);
     Ref<SuperAnimData> get_sam() const;
+
+    void replace_sprite(const String originalSpriteName, const String newSpriteName);
+    void resume_sprite(const String originalSpriteName);
 
     //load the resource string and get the corresponding handle.
     void load_anim(String resPath);

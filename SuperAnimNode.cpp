@@ -82,7 +82,8 @@ void SuperAnimNode::_bind_methods() {
     ObjectTypeDB::bind_method("pause", &SuperAnimNode::Pause);
     ObjectTypeDB::bind_method("resume", &SuperAnimNode::Resume);
     ObjectTypeDB::bind_method("has_section", &SuperAnimNode::HasSection);
-
+    ObjectTypeDB::bind_method("replace_sprite", &SuperAnimNode::replace_sprite);
+    ObjectTypeDB::bind_method("resume_sprite", &SuperAnimNode::resume_sprite);
 
     ADD_SIGNAL(MethodInfo("AnimTimeEvent", PropertyInfo(Variant::STRING, "label"), PropertyInfo(Variant::INT, "mCurFrameNum"), PropertyInfo(Variant::REAL, "timeFactor")));
     ADD_SIGNAL(MethodInfo("AnimSectionEnd", PropertyInfo(Variant::STRING, "label")));
@@ -294,6 +295,21 @@ bool SuperAnimNode::PlaySection(const String &theLabel, bool isLoop)
     return false;
 }
 
+void SuperAnimNode::replace_sprite(const String originalSpriteName, const String newSpriteName)
+{
+    SuperAnim::SuperAnimSpriteId oldSpriteId = SuperAnim::SuperAnimSpriteMgr::GetInstance()->LoadSuperAnimSprite(originalSpriteName);
+    SuperAnim::SuperAnimSpriteId newSpriteId = SuperAnim::SuperAnimSpriteMgr::GetInstance()->LoadSuperAnimSprite(newSpriteName);
+
+    mReplacedSpriteMap[oldSpriteId] = (SuperAnim::SuperAnimSprite*)newSpriteId;
+}
+
+void SuperAnimNode::resume_sprite(const String originalSpriteName)
+{
+    SuperAnim::SuperAnimSpriteId oldSpriteId = SuperAnim::SuperAnimSpriteMgr::GetInstance()->LoadSuperAnimSprite(originalSpriteName);
+    mReplacedSpriteMap.erase(oldSpriteId);
+}
+
+
 void SuperAnimNode::superAnimDraw()
 {
     if (mAnimState == kAnimStateInvalid ||
@@ -325,10 +341,10 @@ void SuperAnimNode::superAnimDraw()
         SuperAnim::SuperAnimSpriteId aCurSpriteId = sAnimObjDrawnInfo.mSpriteId;
 
         //TODO: Handling the sprite replace situation.
-//        SuperAnim::SuperSpriteIdToSuperSpriteIdMap::Element *anIter = mReplacedSpriteMap.find(aCurSpriteId);
-//        if (anIter != mReplacedSpriteMap.end()) {
-//            aCurSpriteId = anIter->second;
-//        }
+        SuperAnim::IdToSuperAnimSpriteMap::Element *anIter = mReplacedSpriteMap.find(aCurSpriteId);
+        if(anIter != NULL){
+            aCurSpriteId = anIter->value();
+        }
 
         //SuperAnimSprite *aSprite = SuperAnimSpriteMgr::GetInstance()->GetSpriteById(aCurSpriteId);
         SuperAnim::SuperAnimSprite *aSprite = (SuperAnim::SuperAnimSprite*)aCurSpriteId;
