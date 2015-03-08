@@ -28,7 +28,7 @@
 
 #include "core/os/os.h"
 #include <math.h>
-#include <string>
+//#include <string>
 #include "core/resource.h"
 #include "core/ustring.h"
 

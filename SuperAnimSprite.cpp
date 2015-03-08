@@ -1,5 +1,6 @@
 #include "SuperAnimSprite.h"
 #include "core/os/os.h"
+#include <string.h>
 
 namespace SuperAnim {
 

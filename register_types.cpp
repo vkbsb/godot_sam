@@ -34,7 +34,7 @@
 SuperAnimDataFormatLoader *resource_loader_sam = NULL;
 SuperAnimDataFormatSaver *resource_saver_sam = NULL;
 
-void register_superanim_types() {
+void register_godot_sam_types() {
     MYPRINT("+Registring the SuperAnim\n");
     ObjectTypeDB::register_type<SuperAnimNode>();
     ObjectTypeDB::register_type<SuperAnimData>();
@@ -49,7 +49,7 @@ void register_superanim_types() {
 
 
 
-void unregister_superanim_types() {
+void unregister_godot_sam_types() {
     
     if(resource_loader_sam){
         memdelete(resource_loader_sam);

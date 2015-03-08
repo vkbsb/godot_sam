@@ -26,6 +26,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-void register_superanim_types();
-void unregister_superanim_types();
+void register_godot_sam_types();
+void unregister_godot_sam_types();
 

@@ -10,7 +10,7 @@
 //#include "SuperAnimCommon.h"
 #include "SuperAnimResource.h"
 #include <stdio.h>
-#include <string>
+#include <string.h>
 
 unsigned char* GetFileData(String pszFileName, const char* pszMode, unsigned long * pSize)
 {

@@ -24,12 +24,12 @@
 //  THE SOFTWARE.
 //
 #include <assert.h>
-#include <string>
-#include <vector>
-#include <map>
+#include <string.h>
+//#include <vector>
+//#include <map>
 #include "core/map.h"
 #include "core/os/os.h"
-#include <algorithm>
+//#include <algorithm>
 #include "SuperAnimCommon.h"
 
 
