@@ -59,6 +59,13 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
     float get_width();
     float get_height();
 
+    void set_flipx(bool value);
+    bool is_flipx();
+
+    void set_flipy(bool value);
+    bool is_flipy();
+
+
     void set_showstage(bool p_ShowStage);
     bool is_showstage() const;
 

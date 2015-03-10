@@ -29,6 +29,25 @@ inline ccV3F_C4B_T2F_Quad operator*(const SuperAnim::SuperAnimMatrix3 &theMatrix
 
 /*--------------------------------------------------------*/
 
+void SuperAnimNode::set_flipx(bool value)
+{
+    mIsFlipX = value;
+}
+
+bool SuperAnimNode::is_flipx()
+{
+    return mIsFlipX;
+}
+
+void SuperAnimNode::set_flipy(bool value)
+{
+    mIsFlipY = value;
+}
+
+bool SuperAnimNode::is_flipy()
+{
+    return mIsFlipY;
+}
 
 void SuperAnimNode::Pause()
 {
@@ -84,6 +103,15 @@ void SuperAnimNode::_bind_methods() {
     ObjectTypeDB::bind_method("has_section", &SuperAnimNode::HasSection);
     ObjectTypeDB::bind_method("replace_sprite", &SuperAnimNode::replace_sprite);
     ObjectTypeDB::bind_method("resume_sprite", &SuperAnimNode::resume_sprite);
+
+    ObjectTypeDB::bind_method("is_flipped_h", &SuperAnimNode::is_flipx);
+    ObjectTypeDB::bind_method("set_flip_h", &SuperAnimNode::set_flipx);
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip x"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
+
+    ObjectTypeDB::bind_method("is_flipped_v", &SuperAnimNode::is_flipy);
+    ObjectTypeDB::bind_method("set_flip_v", &SuperAnimNode::set_flipy);
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip y"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
+
 
     ADD_SIGNAL(MethodInfo("AnimTimeEvent", PropertyInfo(Variant::STRING, "label"), PropertyInfo(Variant::INT, "mCurFrameNum"), PropertyInfo(Variant::REAL, "timeFactor")));
     ADD_SIGNAL(MethodInfo("AnimSectionEnd", PropertyInfo(Variant::STRING, "label")));
