@@ -93,6 +93,22 @@ float SuperAnimNode::get_height(){
     return this->mHeight;
 }
 
+void SuperAnimNode::set_loop(bool value){
+    mIsLoop = value;
+}
+
+bool SuperAnimNode::is_loop(){
+    return mIsLoop;
+}
+
+void SuperAnimNode::set_animspeed(float value){
+    mSpeedFactor = value;
+}
+
+float SuperAnimNode::get_animspeed(){
+    return mSpeedFactor;
+}
+
 void SuperAnimNode::_bind_methods() {
 
     ObjectTypeDB::bind_method("get_height", &SuperAnimNode::get_height);
@@ -105,14 +121,6 @@ void SuperAnimNode::_bind_methods() {
     ObjectTypeDB::bind_method("replace_sprite", &SuperAnimNode::replace_sprite);
     ObjectTypeDB::bind_method("resume_sprite", &SuperAnimNode::resume_sprite);
 
-    ObjectTypeDB::bind_method("is_flipped_h", &SuperAnimNode::is_flipx);
-    ObjectTypeDB::bind_method("set_flip_h", &SuperAnimNode::set_flipx);
-    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip x"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
-
-    ObjectTypeDB::bind_method("is_flipped_v", &SuperAnimNode::is_flipy);
-    ObjectTypeDB::bind_method("set_flip_v", &SuperAnimNode::set_flipy);
-    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip y"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
-
 
     ADD_SIGNAL(MethodInfo("AnimTimeEvent", PropertyInfo(Variant::STRING, "label"), PropertyInfo(Variant::INT, "mCurFrameNum"), PropertyInfo(Variant::REAL, "timeFactor")));
     ADD_SIGNAL(MethodInfo("AnimSectionEnd", PropertyInfo(Variant::STRING, "label")));
@@ -123,6 +131,22 @@ void SuperAnimNode::_bind_methods() {
      * of GoDot Editor, we have to have the methods bound to strings before they can be used
      * in the ADD_PROPERTY call.
      */
+
+    ObjectTypeDB::bind_method("get_animspeed", &SuperAnimNode::get_animspeed);
+    ObjectTypeDB::bind_method("set_animspeed", &SuperAnimNode::set_animspeed);
+    ADD_PROPERTY( PropertyInfo( Variant::REAL, "anim speed"), _SCS("set_animspeed"),_SCS("get_animspeed"));
+
+    ObjectTypeDB::bind_method("is_loop", &SuperAnimNode::is_loop);
+    ObjectTypeDB::bind_method("set_loop", &SuperAnimNode::set_loop);
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "Loop Anim"), _SCS("set_loop"),_SCS("is_loop"));
+
+    ObjectTypeDB::bind_method("is_flipped_h", &SuperAnimNode::is_flipx);
+    ObjectTypeDB::bind_method("set_flip_h", &SuperAnimNode::set_flipx);
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip x"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
+
+    ObjectTypeDB::bind_method("is_flipped_v", &SuperAnimNode::is_flipy);
+    ObjectTypeDB::bind_method("set_flip_v", &SuperAnimNode::set_flipy);
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip y"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
 
     //add boolean which lets you show stage borders.
     ObjectTypeDB::bind_method("set_showstage", &SuperAnimNode::set_showstage);
@@ -206,7 +230,7 @@ void SuperAnimNode::set_sam(const Ref<SuperAnimData> samRes)
         this->mIsHandlerValid = true;
         mAnimState = kAnimStateInitialized;
         if(mCurLabel.empty() == false){
-            PlaySection(mCurLabel, true);
+            PlaySection(mCurLabel, mIsLoop);
         }
     } else {
         this->mIsHandlerValid = false;

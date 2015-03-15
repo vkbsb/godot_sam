@@ -41,7 +41,7 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
 
     public:
 
-    bool PlaySection(const String &labelName, bool isLoop);
+    bool PlaySection(const String &labelName, bool isLoop = false);
     bool HasSection(const String &labelName);
     void setSpeedFactor(float newSpeedFactor);
 
@@ -65,12 +65,17 @@ class SuperAnimNode : public Node2D, public SuperAnim::SuperAnimHandler {
     void set_flipy(bool value);
     bool is_flipy();
 
+    void set_loop(bool value);
+    bool is_loop();
 
     void set_showstage(bool p_ShowStage);
     bool is_showstage() const;
 
     void set_showaxis(bool p_ShowAxis);
     bool is_showaxis() const;
+
+    void set_animspeed(float value);
+    float get_animspeed();
 
     void set_sam(const Ref<SuperAnimData>);
     Ref<SuperAnimData> get_sam() const;
