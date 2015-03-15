@@ -125,7 +125,7 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
         } else {
             aImagePath = aCurDir + "/" + aSuperAnimImage.mImageName;
         }
-        print_line("load image: " + aImagePath);
+//        print_line("load image: " + aImagePath);
         //TODO: get the sprite id here.
         //get the texture resource and add it to the SuperAnimSprite stuff and the aSuperAnimImageId.
         aSuperAnimImage.mSpriteId = SuperAnim::LoadSuperAnimSprite(aImagePath);
@@ -244,7 +244,7 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
         if (aFrameFlags & FRAMEFLAGS_FRAME_NAME)
         {
             String aFrameName = aBuffer.ReadString();
-            print_line("FrameName: " + aFrameName);
+//            print_line("FrameName: " + aFrameName);
             SuperAnim::SuperAnimLabel aLabel;
             aLabel.mLabelName = aFrameName;
             aLabel.mStartFrameNum = aFrameNum;
@@ -284,7 +284,7 @@ bool SuperAnimData::LoadSuperAnimMainDef(const String &theSuperAnimFile)
         aMainDef.mLabels.push_back(aSuperAnimLabelArray[i]);
 
         SuperAnim::SuperAnimLabel& aCurLabel = aSuperAnimLabelArray[i];
-        print_line("CurLabel: " + aCurLabel.mLabelName + " sf:" + itos(aCurLabel.mStartFrameNum) + " ef:" + itos(aCurLabel.mEndFrameNum));
+//        print_line("CurLabel: " + aCurLabel.mLabelName + " sf:" + itos(aCurLabel.mStartFrameNum) + " ef:" + itos(aCurLabel.mEndFrameNum));
     }
 
     return true;

@@ -77,6 +77,7 @@ int SuperAnimNode::GetId(){
 
 void SuperAnimNode::SetCurSectionName(String section)
 {
+    mCurLabel = section;
     PlaySection(section, true);
 }
 
@@ -143,7 +144,6 @@ void SuperAnimNode::_bind_methods() {
     //ui element for loading the sam file from editor.
     ObjectTypeDB::bind_method("set_sam", &SuperAnimNode::set_sam);
     ObjectTypeDB::bind_method("get_sam", &SuperAnimNode::get_sam);
-
     //the strings provided here as property_hint are based on the strings we use in the ResourceLoader class.
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "SuperAnim", PROPERTY_HINT_RESOURCE_TYPE,"SuperAnim"), _SCS("set_sam"), _SCS("get_sam"));
 }
@@ -205,7 +205,9 @@ void SuperAnimNode::set_sam(const Ref<SuperAnimData> samRes)
         this->mCurFrameNum = aMainDef->mStartFrameNum;
         this->mIsHandlerValid = true;
         mAnimState = kAnimStateInitialized;
-
+        if(mCurLabel.empty() == false){
+            PlaySection(mCurLabel, true);
+        }
     } else {
         this->mIsHandlerValid = false;
     }

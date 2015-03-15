@@ -10,17 +10,17 @@ SuperAnimSpriteId LoadSuperAnimSprite(String theSpriteName){
 
 /*----------------------- SuperAnimSpriteMgr----------------------------*/
 SuperAnimSpriteId SuperAnimSpriteMgr::LoadSuperAnimSprite(String theSpriteName){
-    print_line("+SuperAnimSpriteMgr::LoadSuperAnimSprite(" + theSpriteName + ")");
+//    print_line("+SuperAnimSpriteMgr::LoadSuperAnimSprite(" + theSpriteName + ")");
     //see if we already have the sprite loaded.
     for(IdToSuperAnimSpriteMap::Element *ptr = mSuperAnimSpriteMap.front(); ptr != NULL; ptr = ptr->next()){
         SuperAnimSprite *sprPtr = ptr->value();
         if(sprPtr->mStringId == theSpriteName){
-            print_line("-SuperAnimSpriteMgr::LoadSuperAnimSprite.. .existing instance");
+//            print_line("-SuperAnimSpriteMgr::LoadSuperAnimSprite.. .existing instance");
             return ptr->key();
         }
     }
 
-    print_line("loading the texture using ResourceLoader");
+//    print_line("loading the texture using ResourceLoader");
     //load the texture resource. typecast the pointer to void*
     Ref<Texture> texRef =  ResourceLoader::load(theSpriteName);
     if(texRef.is_null()){
@@ -39,7 +39,7 @@ SuperAnimSpriteId SuperAnimSpriteMgr::LoadSuperAnimSprite(String theSpriteName){
     //set the map with the value.
     mSuperAnimSpriteMap[spritePtr] = spritePtr;
 
-    OS::get_singleton()->print("-SuperAnimSpriteMgr::LoadSuperAnimSprite(..... new instance) %p", spritePtr);
+//    OS::get_singleton()->print("-SuperAnimSpriteMgr::LoadSuperAnimSprite(..... new instance) %p", spritePtr);
     return spritePtr;
 }
 
@@ -168,10 +168,10 @@ void SuperAnimSprite::SetTexture(CCTexture2D *theTexture)
 
 void SuperAnimSprite::SetTexture(CCTexture2D *theTexture, CCRect theTextureRect)
 {
-    print_line("+SuperAnimSprite::SetTexture()");
+//    print_line("+SuperAnimSprite::SetTexture()");
     if (theTexture == NULL)
     {
-        print_line("-SuperAnimSprite::SetTexture(Null texture)");
+//        print_line("-SuperAnimSprite::SetTexture(Null texture)");
         return;
     }
 
@@ -225,7 +225,7 @@ void SuperAnimSprite::SetTexture(CCTexture2D *theTexture, CCRect theTextureRect)
 //    OS::get_singleton()->print("Point: (%f, %f, %f)\n", mQuad.br.vertices.x,  mQuad.br.vertices.y, mQuad.br.vertices.z);
 //    OS::get_singleton()->print("Point: (%f, %f, %f)\n", mQuad.tl.vertices.x,  mQuad.tl.vertices.y, mQuad.tl.vertices.z);
 //    OS::get_singleton()->print("Point: (%f, %f, %f)\n", mQuad.tr.vertices.x,  mQuad.tr.vertices.y, mQuad.tr.vertices.z);
-    print_line("-SuperAnimSprite::SetTexture()");
+//    print_line("-SuperAnimSprite::SetTexture()");
 }
 
 }
